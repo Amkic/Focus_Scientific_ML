@@ -45,7 +45,10 @@ plot_reduced(
     affine=True
 )
 
-🧠 Demonstrated ExpertiseNumerical Analysis: Spatio-temporal discretization, scheme stability, and flux limiters.Advanced Linear Algebra: Low-rank approximations, SVD projection, and empirical interpolation.Optimization: Reducing algorithmic complexity from $O(N)$ to $O(K)$, where $K \ll N$.Scientific Programming: Expert use of NumPy, SciPy, and Matplotlib for high-performance computing.
+🧠 Demonstrated ExpertiseNumerical Analysis: Spatio-temporal discretization, scheme stability, and flux limiters.
+Advanced Linear Algebra: Low-rank approximations, SVD projection, and empirical interpolation.
+Optimization: Reducing algorithmic complexity from $O(N)$ to $O(K)$, where $K \ll N$.
+Scientific Programming: Expert use of NumPy, SciPy, and Matplotlib for high-performance computing.
 
 ### **Mathematical Formulation**
 
