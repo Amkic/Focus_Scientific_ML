@@ -10,23 +10,20 @@ This repository implements an advanced Model Order Reduction (ROM) framework to 
 In industries such as Aerospace, Automotive, and Energy, high-fidelity simulations (CFD) are often too slow for real-time control, digital twins, or large-scale optimization. The Solution: This project bridges the gap by projecting the physics onto a reduced subspace, maintaining 99%+ accuracy while reducing computational costs by several orders of magnitude.
 
 🛠️ Technical Stack & Algorithms
-Full Order Model (FOM):
 
-Finite Volume Method (FVM) discretization.
+1. Full Order Model (FOM):
+- Finite Volume Method (FVM) discretization.
+- Slope Limiters implementation for shock-capturing without numerical oscillations.
+- Time integration via 2nd-order Runge-Kutta (Heun’s Method).
 
-Slope Limiters implementation for shock-capturing without numerical oscillations.
-
-Time integration via 2nd-order Runge-Kutta (Heun’s Method).
-
-Dimensionality Reduction:
-
-POD (Proper Orthogonal Decomposition) via SVD to extract dominant physical modes.
+2. Dimensionality Reduction:
+- POD (Proper Orthogonal Decomposition) via SVD to extract dominant physical modes.
 
 Greedy Basis Algorithm for adaptive snapshot selection.
 
-Hyper-Reduction (The Core):
+3. Hyper-Reduction (The Core):
 
-DEIM (Discrete Empirical Interpolation Method): An advanced technique to evaluate non-linear fluxes at a few selected interpolation points. This ensures the computational cost scales with the reduced dimension rather than the full mesh size.
+- DEIM (Discrete Empirical Interpolation Method): An advanced technique to evaluate non-linear fluxes at a few selected interpolation points. This ensures the computational cost scales with the reduced dimension rather than the full mesh size.
 
 📊 Performance Benchmark
 The reduced model successfully captures complex physics (like shock wave propagation) while significantly decreasing CPU time.
