@@ -40,11 +40,7 @@ The equation is discretized using a finite volume method on a uniform grid:
 - numerical diffusion for robustness
 - The numerical flux has the general form:
 
-$$ F_{i+\frac12}
-=
-\frac{f(u_L)+f(u_R)}{2}
-- \frac{\lambda}{2}(u_L-u_R)
-- \nu \nabla u, $$
+$$ F_{i+1/2} = \frac{f(u_L)+f(u_R)}{2} - \frac{\lambda}{2}(u_L-u_R) - \nu \nabla u, $$
 
 where:
 $$ \item $u_L, u_R$ are reconstructed interface states,
