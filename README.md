@@ -34,68 +34,63 @@ Flux functions
 
 Two fluxes are supported:
 
-\begin{equation}
+$$\begin{equation}
 f(u) = u
-\end{equation}
+\end{equation}$$
 
-\begin{equation}
+$$\begin{equation}
 f(u) = \frac{1}{2}u^2
-\end{equation}
+\end{equation}$$
 
 🔢 Full Order Model (FOM)
 Spatial discretization
 
 The equation is discretized using a finite volume method on a uniform grid:
 
-cell-centered unknowns
+- cell-centered unknowns
+- ghost cells for boundary conditions
+- MUSCL-type reconstruction
+- slope limiter for stability
+- numerical diffusion for robustness
+- The numerical flux has the general form:
 
-ghost cells for boundary conditions
-
-MUSCL-type reconstruction
-
-slope limiter for stability
-
-numerical diffusion for robustness
-
-The numerical flux has the general form:
-
-\begin{equation}
+$$\begin{equation}
 F_{i+\frac12}
 =
 \frac{f(u_L)+f(u_R)}{2}
 - \frac{\lambda}{2}(u_L-u_R)
 - \nu \nabla u,
-\end{equation}
+\end{equation}$$
 
 where:
-\begin{itemize}
+$$\begin{itemize}
     \item $u_L, u_R$ are reconstructed interface states,
     \item $\lambda = \max |f'(u)|$,
     \item $\nu = \frac{1}{Re}$.
-\end{itemize}
+\end{itemize}$$
 
 Time integration
 
 A second-order explicit Runge–Kutta scheme (Heun method) is used:
 
-\begin{align}
+$$\begin{align}
 u^{*} &= u^n + \frac{\Delta t}{2} F(u^n), \\
 u^{n+1} &= u^n + \Delta t\, F(u^{*}).
-\end{align}
+\end{align}$$
 
 The timestep satisfies a CFL-like condition:
 
-\begin{equation}
+$$\begin{equation}
 \Delta t = 0.4 \min(h, Re\, h^2).
-\end{equation}
+\end{equation}$$
 
 📸 Snapshot generation
 
 During the full-order simulation, solution snapshots are collected:
 
-\begin{equation}
+$$\begin{equation}
 S = [u(t_1), u(t_2), \dots, u(t_N)] \in \mathbb{R}^{N_x \times N_t}.
-\end{equation}
+\end{equation}$$
 
 
 These snapshots form the basis for reduced-order modeling.
@@ -104,15 +99,15 @@ These snapshots form the basis for reduced-order modeling.
 
 Snapshots are decomposed using Singular Value Decomposition:
 
-\begin{equation}
+$$\begin{equation}
 S = U \Sigma V^T.
-\end{equation}
+\end{equation}$$
 
 The reduced basis is defined as:
-\begin{equation}
+$$\begin{equation}
 \Phi = U_{(:,1:r)},
 \end{equation}
-where $r \ll N_x$.
+where $r \ll N_x$.$$
 
 ⚡ Hyper-reduction with DEIM
 
@@ -126,9 +121,9 @@ For nonlinear problems, evaluating the full nonlinear term is computationally ex
 The \textbf{Discrete Empirical Interpolation Method (DEIM)} alleviates this cost.
 
 Let $\Phi_f$ be POD modes of the nonlinear flux. The DEIM approximation reads:
-\begin{equation}
+$$\begin{equation}
 f(u) \approx \Phi_f (P^T \Phi_f)^{-1} P^T f(u),
-\end{equation}
+\end{equation}$$
 where $P$ is a sparse selection matrix extracting a few spatial entries.
 
 This reduces the complexity of nonlinear evaluations from $\mathcal{O}(N)$ to $\mathcal{O}(r)$.
@@ -136,20 +131,64 @@ This reduces the complexity of nonlinear evaluations from $\mathcal{O}(N)$ to $\
 🧩 Reduced-order dynamical system.
 
 The reduced solution is written as:
-\begin{equation}
+$$\begin{equation}
 u(x,t) \approx \Phi a(t) + \bar{u}.
-\end{equation}
+\end{equation}$$
 
-\subsection*{Without hyper-reduction}
-\begin{equation}
+Without hyper-reduction:
+$$\begin{equation}
 \dot{a} = \Phi^T F(\Phi a + \bar{u}).
-\end{equation}
+\end{equation}$$
 
-\subsection*{With DEIM}
-\begin{equation}
+With DEIM : 
+$$\begin{equation}
 \dot{a} = \Phi^T \Pi_{\mathrm{DEIM}} F(\Phi a + \bar{u}),
-\end{equation}
+\end{equation}$$
 with
-\begin{equation}
+$$\begin{equation}
 \Pi_{\mathrm{DEIM}} = \Phi_f (P^T \Phi_f)^{-1} P^T.
-\end{equation}
+\end{equation}$$
+
+Evaluation
+
+The code automatically:
+
+- computes the full-order solution,
+- builds reduced bases (POD or Greedy)
+- applies DEIM hyper-reduction
+- solves the reduced model
+- measures execution time
+- computes the final-time error
+
+$$|u_{\text{ROM}}(T) - u_{\text{FOM}}(T)\|$$
+
+- plots the reduced and full solutions
+- visualizes POD modes
+
+
+This project demonstrates:
+
+- solid background in numerical PDEs
+- projection-based reduced order modeling
+- POD–Galerkin and DEIM methods
+- scientific Python implementation
+- understanding of accuracy–performance trade-offs
+- relevance for real-time simulation and digital twins
+
+Technologies :
+
+- Python
+- NumPy / SciPy
+- Matplotlib
+- Numerical linear algebra
+- Model Order Reduction
+- Possible extensions
+- Stabilized POD–Galerkin
+- GNAT hyper-reduction
+- Autoencoder-based ROM
+- Neural operators
+- Parametric ROM
+- 2D Burgers or Navier–Stokes
+- A posteriori error estimation
+
+
