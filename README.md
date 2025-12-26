@@ -46,6 +46,7 @@ $\nu = \frac{1}{Re}$.
 Time integration
 
 A second-order explicit Runge–Kutta scheme (Heun method) is used:
+
 $$u^* = u^n + \frac{\Delta t}{2} F(u^n)$$
 
 $$u^{n+1} = u^n + \Delta t F(u^{*})$$
@@ -144,5 +145,10 @@ Technologies :
 - Parametric ROM
 - 2D Burgers or Navier–Stokes
 - A posteriori error estimation
+
+
+Results :
+
+
 
 
