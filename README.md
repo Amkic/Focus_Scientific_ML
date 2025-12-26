@@ -14,8 +14,7 @@ The goal is to achieve significant computational speed-up while preserving accur
 
 We consider the nonlinear conservation law:
 
-$$ \partial_t \rho + \partial_x f(\rho)
-= \frac{1}{Re}\,\partial_{xx}\rho $$
+$$\partial_t \rho + \partial_x f(\rho) = \frac{1}{Re}\,\partial_{xx}\rho$$
 
 defined on a one-dimensional spatial domain with suitable boundary conditions.
 
@@ -23,7 +22,7 @@ Flux functions
 
 Two fluxes are supported:
 
-$ f(u) = u $ and $ f(u) = \frac{1}{2}u^2 $
+$f(u) = u $ and $ f(u) = \frac{1}{2}u^2$
 
 🔢 Full Order Model (FOM)
 Spatial discretization
@@ -37,7 +36,7 @@ The equation is discretized using a finite volume method on a uniform grid:
 - numerical diffusion for robustness
 - The numerical flux has the general form:
 
-$$ F_{i+1/2} = \frac{f(u_L)+f(u_R)}{2} - \frac{\lambda}{2}(u_L-u_R) - \nu \nabla u, $$
+$$F_{i+1/2} = \frac{f(u_L)+f(u_R)}{2} - \frac{\lambda}{2}(u_L-u_R) - \nu \nabla u$$
 
 where:
 - $u_L, u_R$ are reconstructed interface states,  
@@ -58,7 +57,7 @@ $$ \Delta t = 0.4 \min(h, Re\, h^2). $$
 
 During the full-order simulation, solution snapshots are collected:
 
-$$ S = [u(t_1), u(t_2), \dots, u(t_N)] \in \mathbb{R}^{N_x \times N_t}. $$
+$$S = [u(t_1), u(t_2), \dots, u(t_N)] \in \mathbb{R}^{N_x \times N_t}$$
 
 
 These snapshots form the basis for reduced-order modeling.
@@ -67,10 +66,10 @@ These snapshots form the basis for reduced-order modeling.
 
 Snapshots are decomposed using Singular Value Decomposition:
 
-$$ S = U \Sigma V^T. $$
+$$S = U \Sigma V^T$$
 
 The reduced basis is defined as:
-$$ \Phi = U_{(:,1:r)}, $$
+$$\Phi = U_{(:,1:r)}$$
 where $r \ll N_x$.
 
 ⚡ Hyper-reduction with DEIM
@@ -85,7 +84,7 @@ For nonlinear problems, evaluating the full nonlinear term is computationally ex
 The \textbf{Discrete Empirical Interpolation Method (DEIM)} alleviates this cost.
 
 Let $\Phi_f$ be POD modes of the nonlinear flux. The DEIM approximation reads:
-$$ f(u) \approx \Phi_f (P^T \Phi_f)^{-1} P^T f(u) $$
+$$f(u) \approx \Phi_f (P^T \Phi_f)^{-1} P^T f(u)$$
 where $P$ is a sparse selection matrix extracting a few spatial entries.
 
 This reduces the complexity of nonlinear evaluations from $\mathcal{O}(N)$ to $\mathcal{O}(r)$.
@@ -93,15 +92,15 @@ This reduces the complexity of nonlinear evaluations from $\mathcal{O}(N)$ to $\
 🧩 Reduced-order dynamical system.
 
 The reduced solution is written as:
-$$ u(x,t) \approx \Phi a(t) + \bar{u}. $$
+$$u(x,t) \approx \Phi a(t) + \bar{u}$$
 
 Without hyper-reduction:
-$$ \dot{a} = \Phi^T F(\Phi a + \bar{u}). $$
+$$\dot{a} = \Phi^T F(\Phi a + \bar{u})$$
 
 With DEIM : 
-$$ \dot{a} = \Phi^T \Pi_{\mathrm{DEIM}} F(\Phi a + \bar{u}), $$
+$$\dot{a} = \Phi^T \Pi_{\mathrm{DEIM}} F(\Phi a + \bar{u})$$
 with
-$$ \Pi_{\mathrm{DEIM}} = \Phi_f (P^T \Phi_f)^{-1} P^T. $$
+$$\Pi_{\mathrm{DEIM}} = \Phi_f (P^T \Phi_f)^{-1} P^T$$
 
 Evaluation
 
