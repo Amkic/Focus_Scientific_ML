@@ -40,13 +40,15 @@ The equation is discretized using a finite volume method on a uniform grid:
 $$ F_{i+1/2} = \frac{f(u_L)+f(u_R)}{2} - \frac{\lambda}{2}(u_L-u_R) - \nu \nabla u, $$
 
 where:
-$u_L, u_R$ are reconstructed interface states, $\lambda = \max |f'(u)|$, $\nu = \frac{1}{Re}$. $$
+- $u_L, u_R$ are reconstructed interface states,  
+$\lambda = \max |f'(u)|$,  
+$\nu = \frac{1}{Re}$.
 
 Time integration
 
 A second-order explicit Runge–Kutta scheme (Heun method) is used:
 $$ u^* = u^n + \frac{\Delta t}{2} F(u^n) $$
-$$ u^{n+1) = u^n + \Delta t F(u^{*}) $$
+$$ u^{n+1} = u^n + \Delta t F(u^{*}) $$
 
 The timestep satisfies a CFL-like condition:
 
@@ -83,7 +85,7 @@ For nonlinear problems, evaluating the full nonlinear term is computationally ex
 The \textbf{Discrete Empirical Interpolation Method (DEIM)} alleviates this cost.
 
 Let $\Phi_f$ be POD modes of the nonlinear flux. The DEIM approximation reads:
-$$ f(u) ~ \Phi_f (P^T \Phi_f)^{-1} P^T f(u), $$
+$$ f(u) \approx \Phi_f (P^T \Phi_f)^{-1} P^T f(u) $$
 where $P$ is a sparse selection matrix extracting a few spatial entries.
 
 This reduces the complexity of nonlinear evaluations from $\mathcal{O}(N)$ to $\mathcal{O}(r)$.
