@@ -23,10 +23,10 @@ The goal is to achieve significant computational speed-up while preserving accur
 
 We consider the nonlinear conservation law:
 
-\begin{equation}
+$$\begin{equation}
 \partial_t \rho + \partial_x f(\rho)
 = \frac{1}{Re}\,\partial_{xx}\rho,
-\end{equation}
+\end{equation}$$
 
 defined on a one-dimensional spatial domain with suitable boundary conditions.
 
