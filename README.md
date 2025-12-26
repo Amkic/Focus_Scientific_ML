@@ -45,9 +45,8 @@ $u_L, u_R$ are reconstructed interface states, $\lambda = \max |f'(u)|$, $\nu = 
 Time integration
 
 A second-order explicit Runge–Kutta scheme (Heun method) is used:
-
-$$ u^{*} &= u^n + \frac{\Delta t}{2} F(u^n)$$
-$$ u^{n+1} &= u^n + \Delta t\, F(u^{*}). $$
+$$ u^* = u^n + \frac{\Delta t}{2} F(u^n) $$
+$$ u^{n+1) = u^n + \Delta t F(u^{*}) $$
 
 The timestep satisfies a CFL-like condition:
 
