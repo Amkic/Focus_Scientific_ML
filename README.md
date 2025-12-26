@@ -14,10 +14,8 @@ The goal is to achieve significant computational speed-up while preserving accur
 
 We consider the nonlinear conservation law:
 
-$$ \begin{equation}
-\partial_t \rho + \partial_x f(\rho)
-= \frac{1}{Re}\,\partial_{xx}\rho,
-\end{equation} $$
+$$ \partial_t \rho + \partial_x f(\rho)
+= \frac{1}{Re}\,\partial_{xx}\rho $$
 
 defined on a one-dimensional spatial domain with suitable boundary conditions.
 
@@ -25,13 +23,10 @@ Flux functions
 
 Two fluxes are supported:
 
-$$ \begin{equation}
-f(u) = u
-\end{equation} $$
+$$ 
+f(u) = u $$
 
-$$ \begin{equation}
-f(u) = \frac{1}{2}u^2
-\end{equation} $$
+$$ f(u) = \frac{1}{2}u^2 $$
 
 🔢 Full Order Model (FOM)
 Spatial discretization
@@ -45,43 +40,33 @@ The equation is discretized using a finite volume method on a uniform grid:
 - numerical diffusion for robustness
 - The numerical flux has the general form:
 
-$$ \begin{equation}
-F_{i+\frac12}
+$$ F_{i+\frac12}
 =
 \frac{f(u_L)+f(u_R)}{2}
 - \frac{\lambda}{2}(u_L-u_R)
-- \nu \nabla u,
-\end{equation} $$
+- \nu \nabla u, $$
 
 where:
-$$ \begin{itemize}
-    \item $u_L, u_R$ are reconstructed interface states,
+$$ \item $u_L, u_R$ are reconstructed interface states,
     \item $\lambda = \max |f'(u)|$,
-    \item $\nu = \frac{1}{Re}$.
-\end{itemize} $$
+    \item $\nu = \frac{1}{Re}$. $$
 
 Time integration
 
 A second-order explicit Runge–Kutta scheme (Heun method) is used:
 
-$$ \begin{align}
-u^{*} &= u^n + \frac{\Delta t}{2} F(u^n), \\
-u^{n+1} &= u^n + \Delta t\, F(u^{*}).
-\end{align} $$
+$$ u^{*} &= u^n + \frac{\Delta t}{2} F(u^n), \\
+u^{n+1} &= u^n + \Delta t\, F(u^{*}). $$
 
 The timestep satisfies a CFL-like condition:
 
-$$ \begin{equation}
-\Delta t = 0.4 \min(h, Re\, h^2).
-\end{equation} $$
+$$ \Delta t = 0.4 \min(h, Re\, h^2). $$
 
 📸 Snapshot generation
 
 During the full-order simulation, solution snapshots are collected:
 
-$$ \begin{equation}
-S = [u(t_1), u(t_2), \dots, u(t_N)] \in \mathbb{R}^{N_x \times N_t}.
-\end{equation} $$
+$$ S = [u(t_1), u(t_2), \dots, u(t_N)] \in \mathbb{R}^{N_x \times N_t}. $$
 
 
 These snapshots form the basis for reduced-order modeling.
@@ -90,14 +75,10 @@ These snapshots form the basis for reduced-order modeling.
 
 Snapshots are decomposed using Singular Value Decomposition:
 
-$$ \begin{equation}
-S = U \Sigma V^T.
-\end{equation} $$
+$$ S = U \Sigma V^T. $$
 
 The reduced basis is defined as:
-$$ \begin{equation}
-\Phi = U_{(:,1:r)},
-\end{equation}$$
+$$ \Phi = U_{(:,1:r)}, $$
 where $r \ll N_x$.
 
 ⚡ Hyper-reduction with DEIM
@@ -112,9 +93,7 @@ For nonlinear problems, evaluating the full nonlinear term is computationally ex
 The \textbf{Discrete Empirical Interpolation Method (DEIM)} alleviates this cost.
 
 Let $\Phi_f$ be POD modes of the nonlinear flux. The DEIM approximation reads:
-$$\begin{equation}
-f(u) \approx \Phi_f (P^T \Phi_f)^{-1} P^T f(u),
-\end{equation}$$
+$$ f(u) \approx \Phi_f (P^T \Phi_f)^{-1} P^T f(u), $$
 where $P$ is a sparse selection matrix extracting a few spatial entries.
 
 This reduces the complexity of nonlinear evaluations from $\mathcal{O}(N)$ to $\mathcal{O}(r)$.
@@ -122,23 +101,15 @@ This reduces the complexity of nonlinear evaluations from $\mathcal{O}(N)$ to $\
 🧩 Reduced-order dynamical system.
 
 The reduced solution is written as:
-$$\begin{equation}
-u(x,t) \approx \Phi a(t) + \bar{u}.
-\end{equation}$$
+$$ u(x,t) \approx \Phi a(t) + \bar{u}. $$
 
 Without hyper-reduction:
-$$\begin{equation}
-\dot{a} = \Phi^T F(\Phi a + \bar{u}).
-\end{equation}$$
+$$ \dot{a} = \Phi^T F(\Phi a + \bar{u}). $$
 
 With DEIM : 
-$$\begin{equation}
-\dot{a} = \Phi^T \Pi_{\mathrm{DEIM}} F(\Phi a + \bar{u}),
-\end{equation}$$
+$$ \dot{a} = \Phi^T \Pi_{\mathrm{DEIM}} F(\Phi a + \bar{u}), $$
 with
-$$\begin{equation}
-\Pi_{\mathrm{DEIM}} = \Phi_f (P^T \Phi_f)^{-1} P^T.
-\end{equation}$$
+$$ \Pi_{\mathrm{DEIM}} = \Phi_f (P^T \Phi_f)^{-1} P^T. $$
 
 Evaluation
 
