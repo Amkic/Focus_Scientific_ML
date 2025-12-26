@@ -112,6 +112,9 @@ Below is a typical outcome of the code:
 
 Only a small number of modes (e.g. 5–10) is sufficient to accurately recover the solution shape
 
+<img width="1400" height="500" alt="Figure_1" src="https://github.com/user-attachments/assets/bcd051f6-d41e-4dcb-8c36-bf27d2fd8e0e" />
+
+
 This illustrates that:
 
 ✅ the dominant dynamics lie in a low-dimensional subspace
