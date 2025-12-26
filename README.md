@@ -46,8 +46,8 @@ Time integration
 
 A second-order explicit Runge–Kutta scheme (Heun method) is used:
 
-$$ u^{*} &= u^n + \frac{\Delta t}{2} F(u^n), \\
-u^{n+1} &= u^n + \Delta t\, F(u^{*}). $$
+$$ u^{*} &= u^n + \frac{\Delta t}{2} F(u^n)$$
+$$ u^{n+1} &= u^n + \Delta t\, F(u^{*}). $$
 
 The timestep satisfies a CFL-like condition:
 
@@ -84,7 +84,7 @@ For nonlinear problems, evaluating the full nonlinear term is computationally ex
 The \textbf{Discrete Empirical Interpolation Method (DEIM)} alleviates this cost.
 
 Let $\Phi_f$ be POD modes of the nonlinear flux. The DEIM approximation reads:
-$$ f(u) \approx \Phi_f (P^T \Phi_f)^{-1} P^T f(u), $$
+$$ f(u) ~ \Phi_f (P^T \Phi_f)^{-1} P^T f(u), $$
 where $P$ is a sparse selection matrix extracting a few spatial entries.
 
 This reduces the complexity of nonlinear evaluations from $\mathcal{O}(N)$ to $\mathcal{O}(r)$.
