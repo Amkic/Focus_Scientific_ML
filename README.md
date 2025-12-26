@@ -1,21 +1,12 @@
-POD, Greedy and DEIM applied to the 1D Burgers Equation
-📌 Overview
-
 This repository presents a complete implementation of projection-based reduced order modeling (ROM) techniques applied to a nonlinear partial differential equation: the 1D Burgers equation.
 
 The project combines:
 
-a high-fidelity finite volume solver (FOM),
-
-snapshot-based model reduction,
-
-Proper Orthogonal Decomposition (POD),
-
-Greedy reduced basis construction,
-
-hyper-reduction using DEIM,
-
-and a quantitative comparison between full and reduced models.
+- a high-fidelity finite volume solver (FOM),
+- snapshot-based model reduction,
+- Proper Orthogonal Decomposition (POD),
+- Greedy reduced basis construction,
+- hyper-reduction using DEIM, and a quantitative comparison between full and reduced models.
 
 The goal is to achieve significant computational speed-up while preserving accuracy, a key challenge in scientific computing, digital twins, and physics-informed AI.
 
@@ -23,10 +14,10 @@ The goal is to achieve significant computational speed-up while preserving accur
 
 We consider the nonlinear conservation law:
 
-$$\begin{equation}
+$$ \begin{equation}
 \partial_t \rho + \partial_x f(\rho)
 = \frac{1}{Re}\,\partial_{xx}\rho,
-\end{equation}$$
+\end{equation} $$
 
 defined on a one-dimensional spatial domain with suitable boundary conditions.
 
@@ -34,13 +25,13 @@ Flux functions
 
 Two fluxes are supported:
 
-$$\begin{equation}
+$$ \begin{equation}
 f(u) = u
-\end{equation}$$
+\end{equation} $$
 
-$$\begin{equation}
+$$ \begin{equation}
 f(u) = \frac{1}{2}u^2
-\end{equation}$$
+\end{equation} $$
 
 🔢 Full Order Model (FOM)
 Spatial discretization
@@ -54,43 +45,43 @@ The equation is discretized using a finite volume method on a uniform grid:
 - numerical diffusion for robustness
 - The numerical flux has the general form:
 
-$$\begin{equation}
+$$ \begin{equation}
 F_{i+\frac12}
 =
 \frac{f(u_L)+f(u_R)}{2}
 - \frac{\lambda}{2}(u_L-u_R)
 - \nu \nabla u,
-\end{equation}$$
+\end{equation} $$
 
 where:
-$$\begin{itemize}
+$$ \begin{itemize}
     \item $u_L, u_R$ are reconstructed interface states,
     \item $\lambda = \max |f'(u)|$,
     \item $\nu = \frac{1}{Re}$.
-\end{itemize}$$
+\end{itemize} $$
 
 Time integration
 
 A second-order explicit Runge–Kutta scheme (Heun method) is used:
 
-$$\begin{align}
+$$ \begin{align}
 u^{*} &= u^n + \frac{\Delta t}{2} F(u^n), \\
 u^{n+1} &= u^n + \Delta t\, F(u^{*}).
-\end{align}$$
+\end{align} $$
 
 The timestep satisfies a CFL-like condition:
 
-$$\begin{equation}
+$$ \begin{equation}
 \Delta t = 0.4 \min(h, Re\, h^2).
-\end{equation}$$
+\end{equation} $$
 
 📸 Snapshot generation
 
 During the full-order simulation, solution snapshots are collected:
 
-$$\begin{equation}
+$$ \begin{equation}
 S = [u(t_1), u(t_2), \dots, u(t_N)] \in \mathbb{R}^{N_x \times N_t}.
-\end{equation}$$
+\end{equation} $$
 
 
 These snapshots form the basis for reduced-order modeling.
@@ -99,15 +90,15 @@ These snapshots form the basis for reduced-order modeling.
 
 Snapshots are decomposed using Singular Value Decomposition:
 
-$$\begin{equation}
+$$ \begin{equation}
 S = U \Sigma V^T.
-\end{equation}$$
+\end{equation} $$
 
 The reduced basis is defined as:
-$$\begin{equation}
+$$ \begin{equation}
 \Phi = U_{(:,1:r)},
-\end{equation}
-where $r \ll N_x$.$$
+\end{equation}$$
+where $r \ll N_x$.
 
 ⚡ Hyper-reduction with DEIM
 
