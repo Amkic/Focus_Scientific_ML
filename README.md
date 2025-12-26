@@ -23,10 +23,7 @@ Flux functions
 
 Two fluxes are supported:
 
-$$ 
-f(u) = u $$
-
-$$ f(u) = \frac{1}{2}u^2 $$
+$ f(u) = u $ and $ f(u) = \frac{1}{2}u^2 $
 
 🔢 Full Order Model (FOM)
 Spatial discretization
@@ -43,9 +40,7 @@ The equation is discretized using a finite volume method on a uniform grid:
 $$ F_{i+1/2} = \frac{f(u_L)+f(u_R)}{2} - \frac{\lambda}{2}(u_L-u_R) - \nu \nabla u, $$
 
 where:
-$$ \item $u_L, u_R$ are reconstructed interface states,
-    \item $\lambda = \max |f'(u)|$,
-    \item $\nu = \frac{1}{Re}$. $$
+$u_L, u_R$ are reconstructed interface states, $\lambda = \max |f'(u)|$, $\nu = \frac{1}{Re}$. $$
 
 Time integration
 
