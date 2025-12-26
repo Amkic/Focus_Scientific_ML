@@ -143,7 +143,7 @@ class Eq_full:
     # plot rho_0 and rho
     def plot(self):
         fig, axes = plt.subplots(1, 2, figsize=(12, 4))
-        axes[0].plot(self.cells[self.begin:self.end],self.rho_0,color="red",linewidth=3)
+        axes[0].plot(self.cells[self.begin:self.end],self.rho_0,color="red",linewidth=3, linestyle="--")
         axes[0].title.set_text('rho(0)')
         axes[1].plot(self.cells[self.begin:self.end],self.rho,color="blue",linewidth=3)
         axes[1].title.set_text('rho(t)')
