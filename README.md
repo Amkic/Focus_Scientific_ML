@@ -1,5 +1,18 @@
 This repository presents a complete implementation of projection-based reduced order modeling (ROM) techniques applied to a nonlinear partial differential equation: the 1D Burgers equation.
 
+Importance in Industry :
+Projection-based reduced order modeling (ROM) techniques, such as POD–Galerkin and DEIM, are crucial in industry because they dramatically reduce computational cost while maintaining high fidelity.
+
+They enable real-time simulation of complex systems (digital twins, control, optimization).
+
+Rapid parametric studies for engineering design (aerodynamics, fluid dynamics, thermal systems).
+
+Integration with AI and machine learning for predictive maintenance and decision support.
+
+Efficient uncertainty quantification, crucial in finance, energy, and manufacturing.
+
+By combining full-order models with reduced-order methods, engineers and scientists can accelerate design cycles, reduce costs, and make faster data-driven decisions, making ROM a key tool in high-performance and high-stakes industrial applications.
+
 The project combines:
 
 - a high-fidelity finite volume solver (FOM),
