@@ -22,7 +22,7 @@ Flux functions
 
 Two fluxes are supported:
 
-$f(u) = u $ and $ f(u) = \frac{1}{2}u^2$
+$f(u) = u$ and $f(u) = \frac{1}{2}u^2$
 
 🔢 Full Order Model (FOM)
 Spatial discretization
@@ -47,11 +47,12 @@ Time integration
 
 A second-order explicit Runge–Kutta scheme (Heun method) is used:
 $$u^* = u^n + \frac{\Delta t}{2} F(u^n)$$
+
 $$u^{n+1} = u^n + \Delta t F(u^{*})$$
 
 The timestep satisfies a CFL-like condition:
 
-$$ \Delta t = 0.4 \min(h, Re\, h^2). $$
+$$\Delta t = 0.4 \min(h, Re\, h^2)$$
 
 📸 Snapshot generation
 
