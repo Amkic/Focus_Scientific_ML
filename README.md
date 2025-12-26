@@ -1,167 +1,136 @@
-This repository presents a complete implementation of projection-based reduced order modeling (ROM) techniques applied to a nonlinear partial differential equation: the 1D Burgers equation.
+Example: Reduced Order Modeling for a Nonlinear PDE (Burgers Equation)
 
-Importance in Industry :
-Projection-based reduced order modeling (ROM) techniques, such as POD–Galerkin and DEIM, are crucial in industry because they dramatically reduce computational cost while maintaining high fidelity.
+This repository provides a working implementation of a reduced-order modeling (ROM) pipeline applied to a nonlinear partial differential equation (the 1D Burgers equation). The objective is to demonstrate how high-fidelity numerical simulations can be accelerated using projection-based model reduction techniques, while preserving good accuracy.
 
-They enable real-time simulation of complex systems (digital twins, control, optimization).
+The code is intentionally written in a clear and modular way to highlight the full workflow used in industrial and scientific applications.
 
-Rapid parametric studies for engineering design (aerodynamics, fluid dynamics, thermal systems).
+What this example demonstrates
 
-Integration with AI and machine learning for predictive maintenance and decision support.
+This implementation shows how to:
 
-Efficient uncertainty quantification, crucial in finance, energy, and manufacturing.
+- build a high-fidelity finite-volume solver (FOM) for a nonlinear PDE,
+- generate solution snapshots over time,
+- construct a reduced basis using Proper Orthogonal Decomposition (POD) or a Greedy algorithm,
+- accelerate nonlinear evaluations using DEIM (Discrete Empirical Interpolation Method),
+- project the governing equations onto a low-dimensional subspace,
+- compare full-order and reduced-order solutions.
 
-By combining full-order models with reduced-order methods, engineers and scientists can accelerate design cycles, reduce costs, and make faster data-driven decisions, making ROM a key tool in high-performance and high-stakes industrial applications.
+The reduced model is then solved using the same time integration scheme as the full model.
 
-The project combines:
 
-- a high-fidelity finite volume solver (FOM),
-- snapshot-based model reduction,
-- Proper Orthogonal Decomposition (POD),
-- Greedy reduced basis construction,
-- hyper-reduction using DEIM, and a quantitative comparison between full and reduced models.
+The example considers the one-dimensional viscous Burgers equation:
 
-The goal is to achieve significant computational speed-up while preserving accuracy, a key challenge in scientific computing, digital twins, and physics-informed AI.
+$$\partial_t \rho + \partial_x f(\rho) = \frac{1}{\mathrm{Re}}\, \partial_{xx} \rho,$$
 
-🧠 Mathematical model
+with either:
 
-We consider the nonlinear conservation law:
+linear advection: 
+$$f(u) = u$$
 
-$$\partial_t \rho + \partial_x f(\rho) = \frac{1}{Re}\,\partial_{xx}\rho$$
+nonlinear Burgers flux:
 
-defined on a one-dimensional spatial domain with suitable boundary conditions.
+$$f(u) = \frac{1}{2}u^2$$.
 
-Flux functions
+The Reynolds number controls the diffusion intensity and allows testing different regimes.
 
-Two fluxes are supported:
+Numerical method (Full Order Model)
 
-$f(u) = u$ and $f(u) = \frac{1}{2}u^2$
+The full-order solver uses:
 
-🔢 Full Order Model (FOM)
-Spatial discretization
-
-The equation is discretized using a finite volume method on a uniform grid:
-
-- cell-centered unknowns
+- finite volume discretization on a uniform grid
 - ghost cells for boundary conditions
-- MUSCL-type reconstruction
-- slope limiter for stability
+- MUSCL-type reconstruction with slope limiting
+- explicit second-order Runge–Kutta (Heun) time integration
 - numerical diffusion for robustness
-- The numerical flux has the general form:
 
-$$F_{i+1/2} = \frac{f(u_L)+f(u_R)}{2} - \frac{\lambda}{2}(u_L-u_R) - \nu \nabla u$$
+This represents a realistic CFD-style solver similar in spirit to industrial simulation codes.
 
-where:
-- $u_L, u_R$ are reconstructed interface states,  
-$\lambda = \max |f'(u)|$,  
-$\nu = \frac{1}{Re}$.
+Reduced Order Modeling strategy
+POD (Proper Orthogonal Decomposition)
 
-Time integration
+Snapshots of the solution are collected during the full simulation:
 
-A second-order explicit Runge–Kutta scheme (Heun method) is used:
+$$S = u(t_1), \dots, u(t_N)$$
 
-$$u^* = u^n + \frac{\Delta t}{2} F(u^n)$$
-
-$$u^{n+1} = u^n + \Delta t F(u^{*})$$
-
-The timestep satisfies a CFL-like condition:
-
-$$\Delta t = 0.4 \min(h, Re\, h^2)$$
-
-📸 Snapshot generation
-
-During the full-order simulation, solution snapshots are collected:
-
-$$S = [u(t_1), u(t_2), \dots, u(t_N)] \in \mathbb{R}^{N_x \times N_t}$$
-
-
-These snapshots form the basis for reduced-order modeling.
-
-📉 Proper Orthogonal Decomposition (POD)
-
-Snapshots are decomposed using Singular Value Decomposition:
+A reduced basis is extracted via SVD:
 
 $$S = U \Sigma V^T$$
 
-The reduced basis is defined as:
-$$\Phi = U_{(:,1:r)}$$
-where $r \ll N_x$.
+The first n_modes dominant modes are kept, capturing most of the system’s energy.
 
-⚡ Hyper-reduction with DEIM
+The solution is approximated as:
 
-For nonlinear problems, evaluating the full nonlinear flux remains expensive.
-
-To address this, the Discrete Empirical Interpolation Method (DEIM) is used.
-
-DEIM approximation
-
-For nonlinear problems, evaluating the full nonlinear term is computationally expensive.
-The \textbf{Discrete Empirical Interpolation Method (DEIM)} alleviates this cost.
-
-Let $\Phi_f$ be POD modes of the nonlinear flux. The DEIM approximation reads:
-$$f(u) \approx \Phi_f (P^T \Phi_f)^{-1} P^T f(u)$$
-where $P$ is a sparse selection matrix extracting a few spatial entries.
-
-This reduces the complexity of nonlinear evaluations from $\mathcal{O}(N)$ to $\mathcal{O}(r)$.
-
-🧩 Reduced-order dynamical system.
-
-The reduced solution is written as:
 $$u(x,t) \approx \Phi a(t) + \bar{u}$$
 
+where:
+- $\Phi$ is the reduced basis matrix,
+- $a(t)$ are the reduced coordinates,
+- $\bar{u}$ is a reference (mean) state.
+
+Hyper-reduction with DEIM
+
+For nonlinear problems, evaluating the full nonlinear flux still scales with the original dimension.
+To overcome this, the Discrete Empirical Interpolation Method (DEIM) is used.
+
+DEIM approximates the nonlinear term as:
+
+
+$$f(u) \approx \Phi_f (P^T \Phi_f)^{-1} P^T f(u)$$
+
+where:
+
+$\Phi_f$ is a reduced basis for the nonlinear term, $P$ is a sampling matrix selecting interpolation indices.
+
+This reduces the computational complexity from:
+
+$$\mathcal{O}(N) \;\longrightarrow\; \mathcal{O}(r)$$
+
+making real-time or many-query simulations feasible.
+
+Reduced dynamical system
+
 Without hyper-reduction:
+
 $$\dot{a} = \Phi^T F(\Phi a + \bar{u})$$
 
-With DEIM : 
-$$\dot{a} = \Phi^T \Pi_{\mathrm{DEIM}} F(\Phi a + \bar{u})$$
-with
-$$\Pi_{\mathrm{DEIM}} = \Phi_f (P^T \Phi_f)^{-1} P^T$$
 
-Evaluation
+With DEIM, it becomes:
 
-The code automatically:
+$$\dot{a} = \Phi^T \Pi_{\mathrm{DEIM}} F(\Phi a + \bar{u})$$,
 
-- computes the full-order solution,
-- builds reduced bases (POD or Greedy)
-- applies DEIM hyper-reduction
-- solves the reduced model
-- measures execution time
-- computes the final-time error
+$$\Pi_{\mathrm{DEIM}} = \Phi_f (P^T \Phi_f)^{-1} P^T$$.
 
-$$|u_{\text{ROM}}(T) - u_{\text{FOM}}(T)\|$$
+The reduced system is then integrated in time using the same explicit Runge–Kutta scheme.
 
-- plots the reduced and full solutions
-- visualizes POD modes
+Example result
 
+Below is a typical outcome of the code:
 
-This project demonstrates:
+-Red curve: full-order solution (reference)
 
-- solid background in numerical PDEs
-- projection-based reduced order modeling
-- POD–Galerkin and DEIM methods
-- scientific Python implementation
-- understanding of accuracy–performance trade-offs
-- relevance for real-time simulation and digital twins
+-Blue curve: reduced-order reconstruction.
 
-Technologies :
+Only a small number of modes (e.g. 5–10) is sufficient to accurately recover the solution shape
 
-- Python
-- NumPy / SciPy
-- Matplotlib
-- Numerical linear algebra
-- Model Order Reduction
-- Possible extensions
-- Stabilized POD–Galerkin
-- GNAT hyper-reduction
-- Autoencoder-based ROM
-- Neural operators
-- Parametric ROM
-- 2D Burgers or Navier–Stokes
-- A posteriori error estimation
+This illustrates that:
 
+✅ the dominant dynamics lie in a low-dimensional subspace
 
-Results :
+✅ reduced models can reproduce nonlinear PDE behavior accurately
 
+✅ large computational savings are achievable
 
+Why this matters in industry ?
 
+This type of methodology is widely used in:
 
+- digital twins
+- real-time simulation and control
+- parametric studies and design optimization
+- uncertainty quantification
+- reduced CFD models
+- physics-informed AI pipelines
+- surrogate modeling
+- hybrid physics–ML systems
+
+ROM techniques allow engineers to replace expensive simulations with fast surrogate models while preserving physical consistency.
