@@ -1,4 +1,4 @@
-Example: Reduced Order Modeling for a Nonlinear PDE (Burgers Equation)
+Reduced Order Modeling for a Nonlinear PDE (Burgers Equation)
 
 This repository provides a working implementation of a reduced-order modeling (ROM) pipeline applied to a nonlinear partial differential equation (the 1D Burgers equation). The objective is to demonstrate how high-fidelity numerical simulations can be accelerated using projection-based model reduction techniques, while preserving good accuracy.
 
