@@ -1,719 +1,236 @@
-🚀 Reduced Order Modeling for Nonlinear PDEs
-POD, Greedy and DEIM applied to the 1D Burgers equation
-Overview
+This project presents a complete implementation of \textbf{projection-based reduced order modeling (ROM)} techniques applied to a nonlinear partial differential equation, namely the \textbf{1D Burgers equation}.
 
-This repository presents a complete implementation of projection-based reduced order modeling (ROM) techniques applied to a nonlinear partial differential equation: the 1D Burgers equation.
+The implementation combines:
+\begin{itemize}
+    \item a high-fidelity finite volume solver (Full Order Model -- FOM),
+    \item snapshot-based dimensionality reduction,
+    \item Proper Orthogonal Decomposition (POD),
+    \item Greedy reduced basis construction,
+    \item hyper-reduction using the Discrete Empirical Interpolation Method (DEIM),
+    \item quantitative comparison between full and reduced models.
+\end{itemize}
 
-The project combines:
+Such techniques are widely used in scientific computing, reduced-order modeling, digital twins, and physics-informed machine learning.
 
-a full-order finite volume solver (FOM),
-
-snapshot-based dimensionality reduction,
-
-Proper Orthogonal Decomposition (POD),
-
-Greedy reduced basis construction,
-
-hyper-reduction using the Discrete Empirical Interpolation Method (DEIM),
-
-comparison between accuracy and computational cost.
-
-These techniques are widely used in scientific computing, reduced-order modeling, digital twins and physics-informed AI.
-
-Mathematical model
+\section{Mathematical model}
 
 We consider the nonlinear conservation law
+\begin{equation}
+\partial_t \rho + \partial_x f(\rho)
+= \frac{1}{Re}\,\partial_{xx}\rho,
+\end{equation}
+defined on a one-dimensional spatial domain with suitable boundary conditions.
 
-∂
-𝑡
-𝜌
-+
-∂
-𝑥
-𝑓
-(
-𝜌
-)
+\subsection*{Flux functions}
+
+Two flux functions are implemented:
+
+\paragraph{Linear advection}
+\begin{equation}
+f(u) = u
+\end{equation}
+
+\paragraph{Burgers equation}
+\begin{equation}
+f(u) = \frac{1}{2}u^2
+\end{equation}
+
+\section{Full Order Model (FOM)}
+
+\subsection{Spatial discretization}
+
+The equation is discretized using a \textbf{finite volume method} on a uniform mesh:
+
+\begin{itemize}
+    \item cell-centered unknowns,
+    \item ghost cells for boundary conditions,
+    \item MUSCL-type reconstruction,
+    \item slope limiter for stability,
+    \item numerical viscosity for robustness.
+\end{itemize}
+
+The numerical flux at an interface reads
+\begin{equation}
+F_{i+\frac12}
 =
-1
-𝑅
-𝑒
- 
-∂
-𝑥
-𝑥
-𝜌
-∂
-t
-	​
-
-ρ+∂
-x
-	​
-
-f(ρ)=
-Re
-1
-	​
-
-∂
-xx
-	​
-
-ρ
-
-defined on a one-dimensional spatial domain.
-
-Flux functions
-
-Linear advection
-
-𝑓
-(
-𝑢
-)
-=
-𝑢
-f(u)=u
-
-Burgers equation
-
-𝑓
-(
-𝑢
-)
-=
-1
-2
-𝑢
-2
-f(u)=
-2
-1
-	​
-
-u
-2
-Full Order Model (FOM)
-Spatial discretization
-
-The equation is discretized using a finite volume method with:
-
-cell-centered unknowns
-
-ghost cells for boundary conditions
-
-MUSCL-type reconstruction
-
-slope limiter for stability
-
-numerical viscosity
-
-The numerical flux reads
-
-𝐹
-𝑖
-+
-1
-2
-=
-𝑓
-(
-𝑢
-𝐿
-)
-+
-𝑓
-(
-𝑢
-𝑅
-)
-2
-−
-𝜆
-2
-(
-𝑢
-𝐿
-−
-𝑢
-𝑅
-)
-−
-𝜈
-∇
-𝑢
-F
-i+
-2
-1
-	​
-
-	​
-
-=
-2
-f(u
-L
-	​
-
-)+f(u
-R
-	​
-
-)
-	​
-
-−
-2
-λ
-	​
-
-(u
-L
-	​
-
-−u
-R
-	​
-
-)−ν∇u
-
+\frac{f(u_L)+f(u_R)}{2}
+- \frac{\lambda}{2}(u_L-u_R)
+- \nu \nabla u,
+\end{equation}
 where:
+\begin{itemize}
+    \item $u_L, u_R$ are reconstructed interface states,
+    \item $\lambda = \max |f'(u)|$,
+    \item $\nu = \frac{1}{Re}$.
+\end{itemize}
 
-$u_L, u_R$ are reconstructed interface values
+\subsection{Time integration}
 
-$\lambda = \max |f'(u)|$
+A second-order explicit Runge--Kutta (Heun) scheme is used:
+\begin{align}
+u^{*} &= u^n + \frac{\Delta t}{2} F(u^n), \\
+u^{n+1} &= u^n + \Delta t\, F(u^{*}).
+\end{align}
 
-$\nu = \frac{1}{Re}$
+The time step satisfies the stability condition:
+\begin{equation}
+\Delta t = 0.4 \min(h, Re\, h^2).
+\end{equation}
 
-Time integration
+\section{Snapshot generation}
 
-A second-order explicit Runge–Kutta (Heun) scheme is used:
+During the time integration, solution snapshots are collected:
+\begin{equation}
+S = [u(t_1), u(t_2), \dots, u(t_N)] \in \mathbb{R}^{N_x \times N_t}.
+\end{equation}
 
-𝑢
-∗
-=
-𝑢
-𝑛
-+
-Δ
-𝑡
-2
-𝐹
-(
-𝑢
-𝑛
-)
-u
-∗
-=u
-n
-+
-2
-Δt
-	​
+These snapshots form the database for reduced-order modeling.
 
-F(u
-n
-)
-𝑢
-𝑛
-+
-1
-=
-𝑢
-𝑛
-+
-Δ
-𝑡
- 
-𝐹
-(
-𝑢
-∗
-)
-u
-n+1
-=u
-n
-+ΔtF(u
-∗
-)
-
-The time step is chosen as
-
-Δ
-𝑡
-=
-0.4
-min
-⁡
-(
-ℎ
-,
-𝑅
-𝑒
- 
-ℎ
-2
-)
-Δt=0.4min(h,Reh
-2
-)
-Snapshot generation
-
-During the full-order simulation, solution snapshots are collected:
-
-𝑆
-=
-[
-𝑢
-(
-𝑡
-1
-)
-,
-𝑢
-(
-𝑡
-2
-)
-,
-…
-,
-𝑢
-(
-𝑡
-𝑁
-)
-]
-∈
-𝑅
-𝑁
-𝑥
-×
-𝑁
-𝑡
-S=[u(t
-1
-	​
-
-),u(t
-2
-	​
-
-),…,u(t
-N
-	​
-
-)]∈R
-N
-x
-	​
-
-×N
-t
-	​
-
-
-These snapshots are used to construct reduced bases.
-
-Proper Orthogonal Decomposition (POD)
+\section{Proper Orthogonal Decomposition (POD)}
 
 Snapshots are decomposed using Singular Value Decomposition:
-
-𝑆
-=
-𝑈
-Σ
-𝑉
-𝑇
-S=UΣV
-T
+\begin{equation}
+S = U \Sigma V^T.
+\end{equation}
 
 The reduced basis is defined as:
-
-Φ
-=
-𝑈
-(
-:
-,
-1
-:
-𝑟
-)
-Φ=U
-(:,1:r)
-	​
-
-
+\begin{equation}
+\Phi = U_{(:,1:r)},
+\end{equation}
 where $r \ll N_x$.
 
-Affine decomposition (optional)
+\subsection{Affine decomposition}
 
-To improve accuracy, an affine offset is introduced:
+To improve approximation quality, an affine offset is introduced:
+\begin{equation}
+\bar{u} = \frac{1}{N_t} \sum_{k=1}^{N_t} u(t_k).
+\end{equation}
 
-𝑢
-ˉ
-=
-1
-𝑁
-𝑡
-∑
-𝑘
-=
-1
-𝑁
-𝑡
-𝑢
-(
-𝑡
-𝑘
-)
-u
-ˉ
-=
-N
-t
-	​
+The reduced representation becomes:
+\begin{equation}
+u(x,t) \approx \Phi a(t) + \bar{u}.
+\end{equation}
 
-1
-	​
-
-k=1
-∑
-N
-t
-	​
-
-	​
-
-u(t
-k
-	​
-
-)
-
-The reduced approximation becomes:
-
-𝑢
-(
-𝑥
-,
-𝑡
-)
-≈
-Φ
-𝑎
-(
-𝑡
-)
-+
-𝑢
-ˉ
-u(x,t)≈Φa(t)+
-u
-ˉ
-Greedy reduced basis
+\section{Greedy reduced basis construction}
 
 A greedy algorithm is also implemented:
 
-Initialize the basis with one snapshot
+\begin{enumerate}
+    \item Initialize the basis with one snapshot.
+    \item Project all snapshots onto the current basis.
+    \item Compute the projection error.
+    \item Select the snapshot with maximal error.
+    \item Orthonormalize and enrich the basis.
+    \item Repeat until the desired dimension is reached.
+\end{enumerate}
 
-Project all snapshots onto the current basis
+This approach is commonly used in classical reduced basis methods.
 
-Compute the projection error
+\section{Hyper-reduction with DEIM}
 
-Select the snapshot with maximal error
+For nonlinear problems, evaluating the full nonlinear term is computationally expensive.
+The \textbf{Discrete Empirical Interpolation Method (DEIM)} alleviates this cost.
 
-Orthonormalize and enrich the basis
+Let $\Phi_f$ be POD modes of the nonlinear flux. The DEIM approximation reads:
+\begin{equation}
+f(u) \approx \Phi_f (P^T \Phi_f)^{-1} P^T f(u),
+\end{equation}
+where $P$ is a sparse selection matrix extracting a few spatial entries.
 
-Repeat until the desired dimension is reached
+This reduces the complexity of nonlinear evaluations from $\mathcal{O}(N)$ to $\mathcal{O}(r)$.
 
-Hyper-reduction with DEIM
-
-For nonlinear problems, evaluating the full nonlinear term is expensive.
-The Discrete Empirical Interpolation Method (DEIM) is therefore used.
-
-Let $\Phi_f$ be POD modes of the nonlinear flux. The DEIM approximation is
-
-𝑓
-(
-𝑢
-)
-≈
-Φ
-𝑓
-(
-𝑃
-𝑇
-Φ
-𝑓
-)
-−
-1
-𝑃
-𝑇
-𝑓
-(
-𝑢
-)
-f(u)≈Φ
-f
-	​
-
-(P
-T
-Φ
-f
-	​
-
-)
-−1
-P
-T
-f(u)
-
-where $P$ is a sparse selection matrix.
-
-This reduces the computational cost of nonlinear evaluations from
-$\mathcal{O}(N)$ to $\mathcal{O}(r)$.
-
-Reduced-order dynamical system
+\section{Reduced-order dynamical system}
 
 The reduced solution is written as:
+\begin{equation}
+u(x,t) \approx \Phi a(t) + \bar{u}.
+\end{equation}
 
-𝑢
-(
-𝑥
-,
-𝑡
-)
-≈
-Φ
-𝑎
-(
-𝑡
-)
-+
-𝑢
-ˉ
-u(x,t)≈Φa(t)+
-u
-ˉ
-Without hyper-reduction
-𝑎
-˙
-=
-Φ
-𝑇
-𝐹
-(
-Φ
-𝑎
-+
-𝑢
-ˉ
-)
-a
-˙
-=Φ
-T
-F(Φa+
-u
-ˉ
-)
-With DEIM
-𝑎
-˙
-=
-Φ
-𝑇
-Π
-D
-E
-I
-M
-𝐹
-(
-Φ
-𝑎
-+
-𝑢
-ˉ
-)
-a
-˙
-=Φ
-T
-Π
-DEIM
-	​
+\subsection*{Without hyper-reduction}
+\begin{equation}
+\dot{a} = \Phi^T F(\Phi a + \bar{u}).
+\end{equation}
 
-F(Φa+
-u
-ˉ
-)
-
+\subsection*{With DEIM}
+\begin{equation}
+\dot{a} = \Phi^T \Pi_{\mathrm{DEIM}} F(\Phi a + \bar{u}),
+\end{equation}
 with
+\begin{equation}
+\Pi_{\mathrm{DEIM}} = \Phi_f (P^T \Phi_f)^{-1} P^T.
+\end{equation}
 
-Π
-D
-E
-I
-M
-=
-Φ
-𝑓
-(
-𝑃
-𝑇
-Φ
-𝑓
-)
-−
-1
-𝑃
-𝑇
-Π
-DEIM
-	​
+\section{Time integration of the reduced system}
 
-=Φ
-f
-	​
+The reduced system is integrated using the same second-order Runge--Kutta scheme:
+\begin{equation}
+a^{n+1} = a^n + \Delta t\, \Phi^T F(\cdot).
+\end{equation}
 
-(P
-T
-Φ
-f
-	​
+This ensures a fair comparison between the full and reduced models.
 
-)
-−1
-P
-T
-Time integration of the reduced system
-
-The reduced system is integrated using the same RK2 scheme:
-
-𝑎
-𝑛
-+
-1
-=
-𝑎
-𝑛
-+
-Δ
-𝑡
- 
-Φ
-𝑇
-𝐹
-(
-⋅
-)
-a
-n+1
-=a
-n
-+ΔtΦ
-T
-F(⋅)
-Evaluation
+\section{Evaluation and outputs}
 
 The code automatically:
+\begin{itemize}
+    \item computes the full-order solution,
+    \item builds reduced bases (POD or Greedy),
+    \item applies DEIM hyper-reduction,
+    \item solves the reduced system,
+    \item measures execution time,
+    \item computes the final-time error
+    \[
+    \|u_{\text{ROM}}(T) - u_{\text{FOM}}(T)\|,
+    \]
+    \item plots solution comparisons and POD modes.
+\end{itemize}
 
-computes the full-order solution,
+\section{Typical performance}
 
-builds reduced bases (POD or Greedy),
+Example output:
+\begin{verbatim}
+Time FOM: 2.31 s
+Time ROM: 0.08 s
+SPEED-UP: 28.9x
+\end{verbatim}
 
-applies DEIM hyper-reduction,
-
-solves the reduced model,
-
-measures execution time,
-
-computes the final-time error
-
-∥
-𝑢
-ROM
-(
-𝑇
-)
-−
-𝑢
-FOM
-(
-𝑇
-)
-∥
-∥u
-ROM
-	​
-
-(T)−u
-FOM
-	​
-
-(T)∥
-
-plots the reduced and full solutions
-
-visualizes POD modes
-
-Why this project matters
+\section{Why this project matters}
 
 This project demonstrates:
+\begin{itemize}
+    \item strong foundations in numerical analysis and PDEs,
+    \item mastery of projection-based reduced order models,
+    \item POD--Galerkin and DEIM techniques,
+    \item efficient scientific Python implementation,
+    \item understanding of stability and accuracy trade-offs,
+    \item relevance to real-time simulation and digital twins.
+\end{itemize}
 
-solid background in numerical PDEs
+\section{Technologies}
 
-projection-based reduced order modeling
+\begin{itemize}
+    \item Python
+    \item NumPy / SciPy
+    \item Matplotlib
+    \item Numerical linear algebra
+    \item Model Order Reduction
+\end{itemize}
 
-POD–Galerkin and DEIM methods
+\section{Possible extensions}
 
-scientific Python implementation
+\begin{itemize}
+    \item Stabilized POD--Galerkin methods
+    \item GNAT hyper-reduction
+    \item Autoencoder-based ROMs
+    \item Neural operators
+    \item Parametric ROMs
+    \item 2D Burgers or Navier--Stokes equations
+    \item A posteriori error estimation
+    \item Comparison with Deep Galerkin Method (DGM)
+\end{itemize}
 
-understanding of accuracy–performance trade-offs
+\section*{Author}
 
-relevance for real-time simulation and digital twins
-
-Technologies
-
-Python
-
-NumPy / SciPy
-
-Matplotlib
-
-Numerical linear algebra
-
-Model Order Reduction
-
-Possible extensions
-
-Stabilized POD–Galerkin
-
-GNAT hyper-reduction
-
-Autoencoder-based ROM
-
-Neural operators
-
-Parametric ROM
-
-2D Burgers or Navier–Stokes
-
-A posteriori error estimation
-
-Comparison with Deep Galerkin Method
-
-Author
-
-Amer Jukic
-MSc in Mathematics — PDEs & Deep Learning
-Software Engineer (Python, C#, scientific computing)
+\textbf{Amer Jukic}\\
+MSc in Mathematics -- PDEs \& Deep Learning\\
+Software Engineer (Python, C\#, scientific computing)
