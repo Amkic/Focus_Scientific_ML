@@ -117,11 +117,11 @@ Only a small number of modes (e.g. 5–10) is sufficient to accurately recover t
 
 This illustrates that:
 
-✅ the dominant dynamics lie in a low-dimensional subspace
+1. the dominant dynamics lie in a low-dimensional subspace
 
-✅ reduced models can reproduce nonlinear PDE behavior accurately
+2. reduced models can reproduce nonlinear PDE behavior accurately
 
-✅ large computational savings are achievable
+3. large computational savings are achievable
 
 Why this matters in industry ?
 
